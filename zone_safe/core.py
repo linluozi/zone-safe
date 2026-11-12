@@ -9,7 +9,7 @@ and refuses to choose unless the caller asks for an explicit policy.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Literal
 
@@ -71,6 +71,8 @@ class Resolution:
     kind: Kind
     candidates: tuple[datetime, ...]
     projections: tuple[datetime, ...] = ()
+    # Kept so resolve_local() can render back into the same zone object.
+    zone_info: object = field(default=None, repr=False, compare=False)
 
     def resolve(self, choose: Choose = "strict") -> datetime:
         """Return the single UTC instant, or raise if that is not honest.
@@ -90,6 +92,17 @@ class Resolution:
         if choose == "later":
             return self.candidates[-1]
         raise ZoneSafeError(f"choose must be strict|earlier|later, got {choose!r}")
+
+    def resolve_local(self, choose: Choose = "strict") -> datetime:
+        """Return the chosen instant rendered in the target zone.
+
+        Same refusal rules as :meth:`resolve`: gaps always raise, folds need an
+        explicit policy.  Fixed-offset zones are handled with the stored object.
+        """
+        instant = self.resolve(choose)
+        if self.zone_info is None:
+            return instant
+        return instant.astimezone(self.zone_info)  # type: ignore[arg-type]
 
     @property
     def is_unique(self) -> bool:
@@ -147,4 +160,5 @@ def classify(local: datetime, tz: str | ZoneInfo | timezone) -> Resolution:
         kind=kind,
         candidates=ordered,
         projections=tuple(sorted(projections)) if kind == "nonexistent" else (),
+        zone_info=zone,
     )

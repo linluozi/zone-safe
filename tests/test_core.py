@@ -124,6 +124,33 @@ class Policies(unittest.TestCase):
             with self.assertRaises(NonexistentTimeError):
                 res.resolve(choose)  # type: ignore[arg-type]
 
+    def test_resolve_local_renders_in_target_zone(self) -> None:
+        res = classify(datetime(2026, 11, 1, 1, 30), "America/New_York")
+        early = res.resolve_local("earlier")
+        late = res.resolve_local("later")
+        self.assertEqual(early.replace(tzinfo=None), datetime(2026, 11, 1, 1, 30))
+        self.assertGreater(early.utcoffset(), late.utcoffset())  # earlier is -04:00, later -05:00
+        # Same-tzinfo subtraction is wall-clock (fold is ignored), so compare
+        # the instants explicitly.  This is the trap the library exists for.
+        self.assertEqual(late - early, timedelta(0))
+        self.assertEqual(late.astimezone(UTC) - early.astimezone(UTC), timedelta(hours=1))
+
+    def test_resolve_local_refuses_gap_and_strict_fold(self) -> None:
+        gap = classify(datetime(2026, 3, 8, 2, 30), "America/New_York")
+        with self.assertRaises(NonexistentTimeError):
+            gap.resolve_local("earlier")
+        fold = classify(datetime(2026, 11, 1, 1, 30), "America/New_York")
+        with self.assertRaises(AmbiguousTimeError):
+            fold.resolve_local()
+        unique = classify(datetime(2026, 6, 1, 12, 0), "Asia/Kolkata")
+        self.assertEqual(unique.resolve_local().utcoffset(), timedelta(hours=5, minutes=30))
+
+    def test_resolve_local_keeps_fixed_offset(self) -> None:
+        res = classify(datetime(2026, 1, 1, 0, 0), timezone(timedelta(hours=5, minutes=30)))
+        local = res.resolve_local()
+        self.assertEqual(local.utcoffset(), timedelta(hours=5, minutes=30))
+        self.assertEqual(local.replace(tzinfo=None), datetime(2026, 1, 1, 0, 0))
+
     def test_unique_resolves_under_all_policies(self) -> None:
         res = classify(datetime(2026, 6, 1, 12, 0), "Asia/Kolkata")
         self.assertTrue(res.is_unique)

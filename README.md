@@ -45,6 +45,8 @@ except AmbiguousTimeError as exc:
 print(r.resolve("earlier"))    # 05:30Z
 print(r.resolve("later"))      # 06:30Z
 
+print(r.resolve_local("later"))  # 2026-11-01 01:30:00-05:00 (fold=1)
+
 gap = classify(datetime(2026, 3, 8, 2, 30), "America/New_York")
 print(gap.kind, gap.candidates, gap.projections)
 # nonexistent () (2026-03-08 01:30:00, 2026-03-08 03:30:00)
@@ -70,7 +72,7 @@ For both `fold=0` and `fold=1` it asks the zone for a UTC instant, converts that
 python3 -m unittest discover -s tests -v
 ```
 
-Result on 2026-11-12, CPython 3.12.3, host IANA tzdata **2025b**: **18 tests, OK, 1.857 s**.
+Result on 2026-11-12, CPython 3.12.3, host IANA tzdata **2025b**: **21 tests, OK, 1.86 s**.
 
 The suite does not assert against hand-picked expected UTC strings. Its oracle enumerates every UTC minute in a ±2-day window and keeps the instants that render back to the requested wall time; that is exhaustive because all UTC offsets lie within ±14 h. Comparisons are exact set equality.
 
@@ -84,6 +86,7 @@ The suite does not assert against hand-picked expected UTC strings. Its oracle e
 - Release times only in the sense that `datetime` has no leap-second table; zone transitions come from the installed tz database, so results change if tzdata is updated.
 - Input must be naive. Aware datetimes are rejected rather than reinterpreted.
 - `resolve("earlier"|"later")` is a policy choice, not a correctness claim; the two candidates are both valid.
+- `resolve_local()` returns an aware datetime in the target zone. Subtracting two such datetimes that share the same `tzinfo` compares wall time, ignoring `fold` (CPython rule); compare `x.astimezone(timezone.utc) - y.astimezone(timezone.utc)` when you need real elapsed time.
 - No recurring-event expansion: this classifies a single wall time.
 
 ## License
