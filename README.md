@@ -70,12 +70,12 @@ For both `fold=0` and `fold=1` it asks the zone for a UTC instant, converts that
 python3 -m unittest discover -s tests -v
 ```
 
-Result on 2026-11-12, CPython 3.12.3, host IANA tzdata **2025b**: **18 tests, OK, 1.155 s**.
+Result on 2026-11-12, CPython 3.12.3, host IANA tzdata **2025b**: **18 tests, OK, 1.857 s**.
 
 The suite does not assert against hand-picked expected UTC strings. Its oracle enumerates every UTC minute in a ±2-day window and keeps the instants that render back to the requested wall time; that is exhaustive because all UTC offsets lie within ±14 h. Comparisons are exact set equality.
 
 - 12 named transition cases (New York, Berlin, Lord Howe, Apia's skipped day, Kolkata, London, UTC): **12/12** match the brute-force oracle and the expected class.
-- 48 seeded random wall times across four zones (2010–2027): **48/48** match the oracle. Seed `20261112`.
+- 96 seeded random wall times across ten zones (2010–2027), including Dublin's negative DST, Casablanca's Ramadan shifts, Troll's 2-hour jump, Chatham's +12:45 offset and St John's -3:30: **96/96** match the oracle. Seed `20261112`.
 - Gap projections for New York 2026-03-08 02:30 are exactly `01:30` and `03:30`; gap/fold policy tests cover strict/earlier/later, including the rule that **no policy can resolve a gap**.
 - 5 CLI tests cover exit codes 0/2/3/4 and the `--choose later` instant.
 

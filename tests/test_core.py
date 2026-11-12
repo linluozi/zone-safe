@@ -86,9 +86,13 @@ class KnownCases(unittest.TestCase):
 class OracleSweep(unittest.TestCase):
     def test_random_wall_times_agree_with_bruteforce(self) -> None:
         rng = random.Random(20261112)
-        zones = ["America/New_York", "Europe/Berlin", "Australia/Lord_Howe", "Asia/Kolkata"]
+        zones = [
+            "America/New_York", "Europe/Berlin", "Australia/Lord_Howe", "Asia/Kolkata",
+            "Europe/Dublin", "Africa/Casablanca", "Antarctica/Troll",
+            "Pacific/Chatham", "Asia/Kathmandu", "America/St_Johns",
+        ]
         checked = 0
-        for _ in range(48):
+        for _ in range(96):
             zone = rng.choice(zones)
             start = datetime(2010, 1, 1)
             local = start + timedelta(minutes=rng.randrange(0, 17 * 365 * 24 * 60))
@@ -96,7 +100,7 @@ class OracleSweep(unittest.TestCase):
             self.assertEqual(list(res.candidates), oracle(local, zone), msg=f"{zone} {local}")
             self.assertIn(res.kind, ("unique", "ambiguous", "nonexistent"))
             checked += 1
-        self.assertEqual(checked, 48)
+        self.assertEqual(checked, 96)
 
 
 class Policies(unittest.TestCase):
