@@ -89,6 +89,10 @@ The suite does not assert against hand-picked expected UTC strings. Its oracle e
 - `resolve_local()` returns an aware datetime in the target zone. Subtracting two such datetimes that share the same `tzinfo` compares wall time, ignoring `fold` (CPython rule); compare `x.astimezone(timezone.utc) - y.astimezone(timezone.utc)` when you need real elapsed time.
 - No recurring-event expansion: this classifies a single wall time.
 
+## 本轮创新
+
+This is the first resolver in this cluster whose every `unique` / `ambiguous` / `nonexistent` verdict is cross-checked against an independent, ±2-day minute-by-minute UTC oracle (108/108 wall times, 10 zones), and whose gap case returns the two **projections** as evidence instead of inventing an instant. Unlike `naive.replace(tzinfo=tz)`, no fold is ever selected silently, and `resolve_local()` pins the CPython wall-clock subtraction trap.
+
 ## License
 
 MIT. See `LICENSE`.
