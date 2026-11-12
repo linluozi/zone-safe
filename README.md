@@ -70,7 +70,7 @@ For both `fold=0` and `fold=1` it asks the zone for a UTC instant, converts that
 python3 -m unittest discover -s tests -v
 ```
 
-Result on 2026-11-12, CPython 3.12.3, tzdata from the host: **18 tests, OK, 1.155 s**.
+Result on 2026-11-12, CPython 3.12.3, host IANA tzdata **2025b**: **18 tests, OK, 1.155 s**.
 
 The suite does not assert against hand-picked expected UTC strings. Its oracle enumerates every UTC minute in a ±2-day window and keeps the instants that render back to the requested wall time; that is exhaustive because all UTC offsets lie within ±14 h. Comparisons are exact set equality.
 
