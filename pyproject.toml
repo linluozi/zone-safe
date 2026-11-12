@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zone-safe"
+version = "0.1.0"
+description = "Resolve naive wall-clock times without silently guessing across DST gaps and folds"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "linluozi"}]
+keywords = ["timezone", "dst", "datetime", "zoneinfo", "scheduling"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/linluozi/zone-safe"
+
+[tool.setuptools]
+packages = ["zone_safe"]
